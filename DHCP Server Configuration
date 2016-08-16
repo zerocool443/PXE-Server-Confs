@@ -1,0 +1,98 @@
+Install dhcp server 
+
+
+
+sudo apt-get install isc-dhcp-server
+
+
+1: 
+
+edit /etc/default/isc-dhcp-server configuration file:
+
+sudo vi /etc/default/isc-dhcp-server
+
+Assign the network interface:
+
+[...]
+INTERFACES="eno1"
+
+
+
+
+2:
+edit dhcpd.conf file,
+
+sudo vi /etc/dhcp/dhcpd.conf
+
+
+# option definitions common to all supported networks...
+option domain-name "example.lan";
+option domain-name-servers master.example.lan;
+
+3:
+
+To make this server as official DHCP for your clients, find and uncomment the following line:
+
+[...]
+authoritative;
+[...]
+
+
+
+4:
+
+
+sudo vi /etc/dhcp/dhcpd.conf
+
+
+ A slightly different configuration for an internal subnet.
+subnet 192.168.5.0 netmask 255.255.255.0 {
+  range 192.168.5.3 192.168.5.40;
+  option domain-name-servers master.example.lan ;
+  option domain-name "example.lan";
+  option subnet-mask 255.255.255.0;
+  option routers 192.168.5.2;
+  option broadcast-address 192.168.5.255;
+  default-lease-time 600;
+  max-lease-time 7200;
+#}
+
+
+
+
+5 ::   	OPTIONAL 
+
+TO GIVE A STATIC IP TO A PARTICULAR CLIENT
+
+sudo vi /etc/dhcp/dhcpd.conf
+
+
+
+
+[...]
+host ubuntu-client {
+ hardware ethernet 08:00:27:13:14:d5;
+ fixed-address 192.168.1.160;
+ }
+[...]
+
+
+
+6:
+
+restart dhcp service:
+
+sudo systemctl restart isc-dhcp-server
+
+
+sudo systemctl status isc-dhcp-server
+ 
+
+
+ 
+
+
+
+
+
+

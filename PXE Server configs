@@ -1,0 +1,109 @@
+SETUP DHCP SERVER ON THE PXE SERVER FIRST AND THEN FOLLOW THIS CONFIGURATION  !!!
+
+PART 1 :
+
+1:
+
+
+install PXE server along with TFTP and other dependencies using command:
+
+sudo apt-get install apache2 tftpd-hpa inetutils-inetd
+
+
+2:
+
+sudo nano /etc/default/tftpd-hpa
+
+Add the following 2 lines at the end of the file to enable TFTP server.
+
+
+RUN_DAEMON="yes"
+OPTIONS="-l -s /var/lib/tftpboot"
+
+
+3:
+
+
+sudo nano /etc/inetd.conf
+
+Add the following line at the end:
+
+tftp    dgram   udp    wait    root    /usr/sbin/in.tftpd /usr/sbin/in.tftpd -s /var/lib/tftpboot
+
+
+
+
+
+PART 2 :
+
+
+1:
+
+sudo mount -o loop ubuntu-16.04-server-amd64.iso /mnt/
+
+cd /mnt/
+
+sudo cp -fr install/netboot/* /var/lib/tftpboot/
+
+
+
+
+
+sudo mkdir /var/www/html/ubuntu
+
+sudo cp -fr /mnt/* /var/www/html/ubuntu/
+
+
+
+2:
+
+
+Add the following contents at the end depending upon the distribution architecture you use.
+
+[...]
+label linux
+        kernel ubuntu-installer/amd64/linux
+        append ks=http://192.168.1.105/ks.cfg vga=normal initrd=ubuntu-installer/amd64/initrd.gz
+ramdisk_size=16432 root=/dev/rd/0 rw  --
+
+
+ #replace the ip with your pxe server ip
+
+
+3:
+
+
+
+
+sudo nano /var/lib/tftpboot/pxelinux.cfg/default
+
+
+
+
+
+
+
+Edit /etc/dhcp/dhcpd.conf file:
+
+sudo nano /etc/dhcp/dhcpd.conf
+
+Add the following lines at the end:
+
+allow booting;
+allow bootp;
+option option-128 code 128 = string;
+option option-129 code 129 = text;
+next-server 192.168.1.105;
+filename "pxelinux.0";
+
+#replace the ip with your pxe server ip
+
+
+
+
+4:
+sudo systemctl restart isc-dhcp-server
+
+sudo systemctl status isc-dhcp-server
+
+
